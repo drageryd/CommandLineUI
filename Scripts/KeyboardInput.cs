@@ -150,7 +150,6 @@ public class KeyboardInput : MonoBehaviour
 
     void SendToConsole(List<Dictionary<string, string>> commandList)
     {
-        string oldText = canvasText.text;
         string newText = "";
 
         //Print all but last command history
@@ -177,12 +176,13 @@ public class KeyboardInput : MonoBehaviour
         //newText += "$ " + commands[currentCommand]["command"] + "\n";
 
         // Print
-        if (newText != oldText)
+        if (newText != canvasText.text)
         {
             canvasText.text = newText;
             //Force scroll
             if (scrollRect != null)
             {
+                Canvas.ForceUpdateCanvases();
                 scrollRect.verticalNormalizedPosition = 0f;
             }
         }

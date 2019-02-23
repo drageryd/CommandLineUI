@@ -10,6 +10,8 @@ public class Commands : MonoBehaviour
     CommandExecuter commandExecuter;
     string[] args;
     public string homeDirectory;
+    public GameObject player;
+    private PythonEngine pythonEngine;
     DirectoryInfo currentDirectory;
 
     //Dictionary of valid commands
@@ -27,6 +29,10 @@ public class Commands : MonoBehaviour
         //Fill command dictionary
         commands["ls"] = List;
         commands["pwd"] = PrintWorkingDirectory;
+        commands["python"] = Python;
+
+        //Get player python engine
+        pythonEngine = player.GetComponent<PythonEngine>();
     }
 
     // Update is called once per frame
@@ -104,5 +110,42 @@ public class Commands : MonoBehaviour
     {
         commandExecuter.AppendOutput(currentDirectory.FullName);
     }
+    
+    //------------------------------------------------------
+    // IRONPYTHON COMMANDS
+    //------------------------------------------------------
 
+    // python: run python script
+    void Python()
+    {
+        if (pythonEngine == null)
+        {
+            commandExecuter.AppendOutput("player has no python engine");
+            return;
+        }
+        if (args.Length == 1)
+        {
+            commandExecuter.AppendOutput("python: not yet able to run in console mode, sorry :(");
+            return;
+        }
+
+        string path = args[1];
+        FileInfo fileInfo = new FileInfo(currentDirectory + "/" + path);
+        if (!fileInfo.Exists)
+        {
+            commandExecuter.AppendOutput("python: can't open file '" + path + "': No such file or directory");
+            return;
+        }
+
+        pythonEngine.SetCwd(currentDirectory.FullName);
+        pythonEngine.ExecuteFile(path);//fileInfo.FullName);
+        while (pythonEngine.IsRunning())
+        {
+            if (pythonEngine.StdOutChanged())
+            {
+                commandExecuter.SetOutput(pythonEngine.GetStdOut());
+            }
+        }
+
+    }
 }

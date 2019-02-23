@@ -4,6 +4,7 @@ using UnityEngine;
 
 using System.Threading;
 using System.Reflection;
+using System.IO;
 using System;
 
 public class CommandExecuter : MonoBehaviour {
@@ -51,22 +52,17 @@ public class CommandExecuter : MonoBehaviour {
         output += s;
     }
 
+    public void SetOutput(string s)
+    {
+        output = s;
+    }
+
     void Run(string command)
     {
         output = "";
         string[] args = command.Split(' ');
         if (commandObject != null)
         {
-            /*
-            Type type = commandObject.GetType();
-            MethodInfo methodInfo = type.GetMethod(args[0]);
-            if (methodInfo != null)
-            {
-                commandObject.SetArgs(args);
-                Debug.Log("Command execute " + string.Join(" - ", args));
-                methodInfo.Invoke(commandObject, null);
-            }
-            */
             if (commandObject.HasCommand(args[0]))
             {
                 commandObject.SetArgs(args);
@@ -77,13 +73,6 @@ public class CommandExecuter : MonoBehaviour {
                 output = args[0] + ": command not found";
             }
         }
-        //int number = (int)Random.Range(1, 5);
-        //output = "Hello";
-        //Thread.Sleep(1000);
-        //output += " World";
-        //Thread.Sleep(1000);
-        //output += " foo\n";
-
     }
 
     void Nothing()
