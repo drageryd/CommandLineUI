@@ -14,7 +14,7 @@ public class Commands : MonoBehaviour
     public GameObject player;
     //private PythonEngine pythonEngine;
     private Stream stdinStream;
-    private Stream stdoutStream;
+    private StreamWriter stdoutStreamWriter;
 
     DirectoryInfo currentDirectory;
 
@@ -59,9 +59,14 @@ public class Commands : MonoBehaviour
     {
         stdinStream = stdin;
     }
-    public void SetStdoutStream(Stream stdout)
+    public void SetStdoutStream(StreamWriter stdout)
     {
-        stdoutStream = stdout;
+        stdoutStreamWriter = stdout;
+    }
+
+    public string GetCurrentDirectory()
+    {
+        return currentDirectory.FullName;
     }
 
     public bool HasCommand(string command)
@@ -77,10 +82,12 @@ public class Commands : MonoBehaviour
     //Run callback events
     private void AppendOutput(string s)
     {
-        if (stdoutStream != null)
+        if (stdoutStreamWriter != null)
         {
-            byte[] bytes = Encoding.ASCII.GetBytes(s);
-            stdoutStream.Write(bytes, 0, bytes.Length);
+            //byte[] bytes = Encoding.ASCII.GetBytes(s);
+            //stdoutStream.Write(bytes, 0, bytes.Length);
+            stdoutStreamWriter.Write(s);
+            stdoutStreamWriter.Flush();
         }
     }
 
