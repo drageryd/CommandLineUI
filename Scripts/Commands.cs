@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using System.IO;
+using System.Text;
 
 public class Commands : MonoBehaviour
 {
@@ -11,7 +12,10 @@ public class Commands : MonoBehaviour
     string[] args;
     public string homeDirectory;
     public GameObject player;
-    private PythonEngine pythonEngine;
+    //private PythonEngine pythonEngine;
+    private Stream stdinStream;
+    private Stream stdoutStream;
+
     DirectoryInfo currentDirectory;
 
     //Dictionary of valid commands
@@ -19,8 +23,10 @@ public class Commands : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        commandExecuter = GetComponent<CommandExecuter>();
-        //homeDirectory = Application.dataPath;
+        if (homeDirectory == null)
+        {
+            homeDirectory = Application.dataPath;
+        }
         currentDirectory = new DirectoryInfo(homeDirectory);
 
         //Initialize commands
@@ -29,10 +35,11 @@ public class Commands : MonoBehaviour
         //Fill command dictionary
         commands["ls"] = List;
         commands["pwd"] = PrintWorkingDirectory;
-        commands["python"] = Python;
+        commands["wc"] = WordCount;
+        //commands["python"] = Python;
 
         //Get player python engine
-        pythonEngine = player.GetComponent<PythonEngine>();
+        //pythonEngine = player.GetComponent<PythonEngine>();
     }
 
     // Update is called once per frame
@@ -46,6 +53,15 @@ public class Commands : MonoBehaviour
         args = argsIn;
     }
 
+    public void SetStdinStream(Stream stdin)
+    {
+        stdinStream = stdin;
+    }
+    public void SetStdoutStream(Stream stdout)
+    {
+        stdoutStream = stdout;
+    }
+
     public bool HasCommand(string command)
     {
         return commands.ContainsKey(command);
@@ -54,6 +70,16 @@ public class Commands : MonoBehaviour
     public void RunCommand(string command)
     {
         commands[command]();
+    }
+
+    //Run callback events
+    private void AppendOutput(string s)
+    {
+        if (stdoutStream != null)
+        {
+            byte[] bytes = Encoding.ASCII.GetBytes(s);
+            stdoutStream.Write(bytes, 0, bytes.Length);
+        }
     }
 
     //------------------------------------------------------
@@ -82,7 +108,7 @@ public class Commands : MonoBehaviour
         // Return if directory does not exist
         if (!listDirectory.Exists)
         {
-            commandExecuter.AppendOutput("ls: " + path + ": No such file or directory");
+            AppendOutput("ls: " + path + ": No such file or directory");
             return;
         }
 
@@ -93,14 +119,13 @@ public class Commands : MonoBehaviour
         foreach (DirectoryInfo directory in directoryInfo)
         {
             Debug.Log(directory.Name);
-            commandExecuter.AppendOutput(directory.Name + "\t");
+            AppendOutput(directory.Name + "\t");
         }
         foreach (FileInfo file in fileInfo) 
         {
             Debug.Log(file.Name);
-            commandExecuter.AppendOutput(file.Name + "\t");
+            AppendOutput(file.Name + "\t");
         }
-        //System.IO.Path.GetDirectoryName(Application.ExecutablePath);
 
         Debug.Log(path);
     }
@@ -108,13 +133,36 @@ public class Commands : MonoBehaviour
     // pwd: Get current directory
     void PrintWorkingDirectory()
     {
-        commandExecuter.AppendOutput(currentDirectory.FullName);
+        AppendOutput(currentDirectory.FullName);
     }
     
+    // wc: count characters in input
+    //TODO: count lines, words and characters
+    //TODO: work with both stdin and files
+    void WordCount()
+    {
+        byte[] array = new byte[1024];
+        int count = stdinStream.Read(array, 0, 1024);
+        int sum = 0;
+        while (count != -1)
+        {
+            sum += count;
+            string s = "";
+            for (int i = 0; i < count; i++)
+            {
+                s += (char)array[i];
+            }
+            Debug.Log("Wordcount: " + count);
+            count = stdinStream.Read(array, 0, 1024);
+        }
+        AppendOutput(sum.ToString());
+    }
+
     //------------------------------------------------------
     // IRONPYTHON COMMANDS
     //------------------------------------------------------
 
+    /*
     // python: run python script
     void Python()
     {
@@ -148,4 +196,5 @@ public class Commands : MonoBehaviour
         }
 
     }
+    */
 }

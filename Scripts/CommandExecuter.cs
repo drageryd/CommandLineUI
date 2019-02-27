@@ -5,19 +5,24 @@ using UnityEngine;
 using System.Threading;
 using System.Reflection;
 using System.IO;
+using System.Text;
 using System;
+using CommandLine;
 
 public class CommandExecuter : MonoBehaviour {
 
     Thread myThread;
     bool busy;
-    string output;
+    //string output;
     Commands commandObject;
+    Stream stdinStream;
+    Stream stdpipeStream;
+    StreamStdio stdoutStream;
 
     // Use this for initialization
     void Start () {
         busy = false;
-        output = "";
+        //output = "";
         myThread = new Thread(Nothing);
         commandObject = GetComponent<Commands>();
     }
@@ -44,33 +49,51 @@ public class CommandExecuter : MonoBehaviour {
 
     public string GetOutput()
     {
-        return output;
-    }
-
-    public void AppendOutput(string s)
-    {
-        output += s;
-    }
-
-    public void SetOutput(string s)
-    {
-        output = s;
+        if (stdoutStream != null)
+        {
+            return stdoutStream.GetText();
+        }
+        return "";
     }
 
     void Run(string command)
     {
-        output = "";
-        string[] args = command.Split(' ');
-        if (commandObject != null)
+        //output = "";
+        stdinStream = null;
+        stdpipeStream = null;
+        stdoutStream = null;
+
+        //Piping
+        string[] pipe = command.Split('|');
+        for (int i = 0; i < pipe.Length; i++)
         {
-            if (commandObject.HasCommand(args[0]))
+            //Leading and trailing spaces
+            string c = pipe[i].TrimStart(' ').TrimEnd(' ');
+
+            //TODO: Look for redirects here
+            if (i == 0) stdinStream = new StreamStdio();
+            else stdinStream = stdpipeStream;
+            stdpipeStream = new StreamStdio();
+            if (i == pipe.Length - 1) stdoutStream = (StreamStdio)stdpipeStream;
+
+            string[] args = c.Split(' ');
+            if (commandObject != null)
             {
-                commandObject.SetArgs(args);
-                commandObject.RunCommand(args[0]);
-            }
-            else
-            {
-                output = args[0] + ": command not found";
+                if (commandObject.HasCommand(args[0]))
+                {
+                    commandObject.SetStdinStream(stdinStream);
+                    commandObject.SetStdoutStream(stdpipeStream);
+                    commandObject.SetArgs(args);
+                    commandObject.RunCommand(args[0]);
+                    stdpipeStream.Close();
+                }
+                else
+                {
+                    //output = args[0] + ": command not found";
+                    string s = args[0] + ": command not found";
+                    byte[] bytes = Encoding.ASCII.GetBytes(s);
+                    stdpipeStream.Write(bytes, 0, bytes.Length);
+                }
             }
         }
     }
