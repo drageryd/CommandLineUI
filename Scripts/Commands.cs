@@ -13,7 +13,7 @@ public class Commands : MonoBehaviour
     public string homeDirectory;
     public GameObject player;
     //private PythonEngine pythonEngine;
-    private Stream stdinStream;
+    private StreamReader stdinStreamReader;
     private StreamWriter stdoutStreamWriter;
 
     DirectoryInfo currentDirectory;
@@ -55,9 +55,9 @@ public class Commands : MonoBehaviour
         args = argsIn;
     }
 
-    public void SetStdinStream(Stream stdin)
+    public void SetStdinStream(StreamReader stdin)
     {
-        stdinStream = stdin;
+        stdinStreamReader = stdin;
     }
     public void SetStdoutStream(StreamWriter stdout)
     {
@@ -84,8 +84,6 @@ public class Commands : MonoBehaviour
     {
         if (stdoutStreamWriter != null)
         {
-            //byte[] bytes = Encoding.ASCII.GetBytes(s);
-            //stdoutStream.Write(bytes, 0, bytes.Length);
             stdoutStreamWriter.Write(s);
             stdoutStreamWriter.Flush();
         }
@@ -150,9 +148,8 @@ public class Commands : MonoBehaviour
     //TODO: work with both stdin and files
     void WordCount()
     {
-        StreamReader streamReader = new StreamReader(stdinStream);
-        string s = streamReader.ReadToEnd();
-        streamReader.Close();
+        string s = stdinStreamReader.ReadToEnd();
+        stdinStreamReader.Close();
         AppendOutput(s.Length.ToString());
     }
 
@@ -162,7 +159,7 @@ public class Commands : MonoBehaviour
         StreamReader streamReader;
         if (args.Length < 2)
         {
-            streamReader = new StreamReader(stdinStream);
+            streamReader = stdinStreamReader;
         }
         else if (File.Exists(currentDirectory.FullName + "/" + args[1]))
         {

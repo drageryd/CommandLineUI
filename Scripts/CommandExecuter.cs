@@ -62,6 +62,7 @@ public class CommandExecuter : MonoBehaviour {
         stdpipeStream = null;
         stdoutStream = null;
         StreamWriter stdpipeStreamWriter = null;
+        StreamReader stdinStreamReader = null;
 
         //Piping
         string[] pipe = command.Split('|');
@@ -78,6 +79,7 @@ public class CommandExecuter : MonoBehaviour {
 
             //Look for redirect
             pipeCommand = FindRedirectOut(pipeCommand, ref stdpipeStreamWriter);
+            pipeCommand = FindRedirectIn(pipeCommand, ref stdinStreamReader);
 
             Debug.Log(pipeCommand);
 
@@ -86,12 +88,13 @@ public class CommandExecuter : MonoBehaviour {
             {
                 if (commandObject.HasCommand(args[0]))
                 {
-                    commandObject.SetStdinStream(stdinStream);
+                    commandObject.SetStdinStream(stdinStreamReader);
                     commandObject.SetStdoutStream(stdpipeStreamWriter);
                     commandObject.SetArgs(args);
                     commandObject.RunCommand(args[0]);
                     stdpipeStreamWriter.Close();
                     stdpipeStream.Close();
+                    stdinStreamReader.Close();
                 }
                 else
                 {
@@ -122,6 +125,31 @@ public class CommandExecuter : MonoBehaviour {
         else
         {
             streamWriter = new StreamWriter(stdpipeStream);
+        }
+        return command;
+    }
+
+    string FindRedirectIn(string command, ref StreamReader streamReader)
+    {
+        int redirect = command.IndexOf('<');
+        if (redirect != -1)
+        {
+            int start = redirect + 1;
+            while (start < command.Length && command[start] == ' ') start++;
+            if (start >= command.Length)
+            {
+                StreamWrite(stdpipeStream, "syntax error near unexpected token newline");
+                return "";
+            }
+            int end = start;
+            while (end < command.Length && command[end] != ' ' && command[end] != '\n') end++;
+            string path = command.Substring(start, end-start);
+            streamReader = new StreamReader(commandObject.GetCurrentDirectory() + "/" + path);
+            command = command.Remove(redirect, end-redirect).TrimEnd(' ');
+        }
+        else
+        {
+            streamReader = new StreamReader(stdinStream);
         }
         return command;
     }
