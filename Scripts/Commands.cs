@@ -36,6 +36,8 @@ public class Commands : MonoBehaviour
         commands["ls"] = List;
         commands["pwd"] = PrintWorkingDirectory;
         commands["wc"] = WordCount;
+        commands["cat"] = Concatenate;
+        commands["cd"] = ChangeDirectory;
         //commands["python"] = Python;
 
         //Get player python engine
@@ -141,21 +143,49 @@ public class Commands : MonoBehaviour
     //TODO: work with both stdin and files
     void WordCount()
     {
-        byte[] array = new byte[1024];
-        int count = stdinStream.Read(array, 0, 1024);
-        int sum = 0;
-        while (count != -1)
+        StreamReader streamReader = new StreamReader(stdinStream);
+        string s = streamReader.ReadToEnd();
+        streamReader.Close();
+        AppendOutput(s.Length.ToString());
+    }
+
+    // cat: concatenate and print (display) the content of files
+    void Concatenate()
+    {
+        StreamReader streamReader;
+        if (args.Length < 2)
         {
-            sum += count;
-            string s = "";
-            for (int i = 0; i < count; i++)
-            {
-                s += (char)array[i];
-            }
-            Debug.Log("Wordcount: " + count);
-            count = stdinStream.Read(array, 0, 1024);
+            streamReader = new StreamReader(stdinStream);
         }
-        AppendOutput(sum.ToString());
+        else if (File.Exists(currentDirectory.FullName + "/" + args[1]))
+        {
+            streamReader = new StreamReader(currentDirectory.FullName + "/" + args[1]);
+        }
+        else
+        {
+            AppendOutput("cat: " + args[1] + ": No such file or directory");
+            return;
+        }
+        string s = streamReader.ReadToEnd();
+        streamReader.Close();
+        AppendOutput(s);
+    }
+
+    // cd: change directory
+    //TODO: Limit to home directory
+    void ChangeDirectory()
+    {
+        string path = "";
+        if (args.Length < 2)
+            path = homeDirectory;
+        else
+            path = currentDirectory.FullName + "/" + args[1];
+
+        DirectoryInfo newDirectory = new DirectoryInfo(path);
+        if (newDirectory.Exists)
+            currentDirectory = newDirectory;
+        else
+            AppendOutput("cd: " + args[1] + ": No such file or directory");
     }
 
     //------------------------------------------------------
