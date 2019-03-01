@@ -12,7 +12,7 @@ public class Commands : MonoBehaviour
     string[] args;
     public string homeDirectory;
     public GameObject player;
-    //private PythonEngine pythonEngine;
+    private PythonEngine pythonEngine;
     private StreamReader stdinStreamReader;
     private StreamWriter stdoutStreamWriter;
 
@@ -38,10 +38,10 @@ public class Commands : MonoBehaviour
         commands["wc"] = WordCount;
         commands["cat"] = Concatenate;
         commands["cd"] = ChangeDirectory;
-        //commands["python"] = Python;
+        commands["python"] = Python;
 
         //Get player python engine
-        //pythonEngine = player.GetComponent<PythonEngine>();
+        pythonEngine = player.GetComponent<PythonEngine>();
     }
 
     // Update is called once per frame
@@ -196,18 +196,17 @@ public class Commands : MonoBehaviour
     // IRONPYTHON COMMANDS
     //------------------------------------------------------
 
-    /*
     // python: run python script
     void Python()
     {
         if (pythonEngine == null)
         {
-            commandExecuter.AppendOutput("player has no python engine");
+            AppendOutput("player has no python engine");
             return;
         }
         if (args.Length == 1)
         {
-            commandExecuter.AppendOutput("python: not yet able to run in console mode, sorry :(");
+            AppendOutput("python: not yet able to run in console mode, sorry :(");
             return;
         }
 
@@ -215,20 +214,20 @@ public class Commands : MonoBehaviour
         FileInfo fileInfo = new FileInfo(currentDirectory + "/" + path);
         if (!fileInfo.Exists)
         {
-            commandExecuter.AppendOutput("python: can't open file '" + path + "': No such file or directory");
+            AppendOutput("python: can't open file '" + path + "': No such file or directory");
             return;
         }
 
         pythonEngine.SetCwd(currentDirectory.FullName);
         pythonEngine.ExecuteFile(path);//fileInfo.FullName);
+        pythonEngine.WriteStdIn(stdinStreamReader.ReadToEnd(), true);
         while (pythonEngine.IsRunning())
         {
-            if (pythonEngine.StdOutChanged())
+            if (pythonEngine.StdOutAvailable())
             {
-                commandExecuter.SetOutput(pythonEngine.GetStdOut());
+                AppendOutput(pythonEngine.GetLine());
             }
         }
 
     }
-    */
 }

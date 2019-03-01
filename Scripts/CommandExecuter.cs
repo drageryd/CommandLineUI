@@ -72,7 +72,11 @@ public class CommandExecuter : MonoBehaviour {
             string pipeCommand = pipe[i].TrimStart(' ').TrimEnd(' ');
 
             //TODO: Look for redirects here
-            if (i == 0) stdinStream = new StreamStdio();
+            if (i == 0) 
+            {
+                stdinStream = new StreamStdio();
+                stdinStream.Close();
+            }
             else stdinStream = stdpipeStream;
             stdpipeStream = new StreamStdio();
             if (i == pipe.Length - 1) stdoutStream = (StreamStdio)stdpipeStream;
