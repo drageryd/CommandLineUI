@@ -167,7 +167,8 @@ public class KeyboardInput : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.Return))
             {
-                Exectute();
+                if (commands[currentCommand]["command"].TrimEnd(' ') == "") commands[currentCommand]["completions"] += "$\n";
+                else Exectute();
                 return;
             }
 
