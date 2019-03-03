@@ -164,6 +164,60 @@ public class CommandExecuter : MonoBehaviour {
         stream.Write(bytes, 0, bytes.Length);
     }
 
+    //List possible commands
+    public string ListCompleteCommand(string command)
+    {
+        List<string> list = commandObject.GetMatchingCommands(command, false);
+        return String.Join("\t", list.ToArray());
+    }
+
+    //List possible path
+    public string ListCompletePath(string path)
+    {
+        List<string> list = commandObject.GetMatchingPaths(path, false);
+        return String.Join("\t", list.ToArray());
+    }
+
+    //Complete command
+    public string CompleteCommand(string command)
+    {
+        List<string> list = commandObject.GetMatchingCommands(command, true);
+        //If only one possible
+        if (list.Count == 1) return list[0] + " ";
+        //Autofill all matching starting characters
+        else return GetCommonChars(list);
+    }
+
+    //Complete path
+    public string CompletePath(string path)
+    {
+        List<string> list = commandObject.GetMatchingPaths(path, true);
+        if (list.Count == 1) return list[0] + " ";
+        //Autofill all matching starting characters
+        else return GetCommonChars(list);
+    }
+
+    string GetCommonChars(List<string> list)
+    {
+        string same = "";
+        //Length of shortest word in list
+        int l = list[0].Length;
+        foreach(string c in list) l = (c.Length < l) ? c.Length : l;
+        //If all characters match, append to completion
+        for (int i = 0; i < l; i++)
+        {
+            foreach (string s in list)
+            {
+                //If not match, return all common
+                if (s[i] != list[0][i]) return same;
+            }
+            //If loop completes all characters are equal
+            same += list[0][i];
+        }
+        //If this loop completes all string matches shortest word
+        return same;
+    }
+
     void Nothing()
     {
         //Do nothing

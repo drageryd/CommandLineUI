@@ -74,6 +74,45 @@ public class Commands : MonoBehaviour
         return commands.ContainsKey(command);
     }
 
+    public List<string> GetMatchingCommands(string command, bool clip)
+    {
+        List<string> list = new List<string>();
+        foreach (string key in commands.Keys)
+        {
+            if (key.StartsWith(command) && clip) list.Add(key.Substring(command.Length));
+            else if (key.StartsWith(command)) list.Add(key);
+        }
+        return list;
+    }
+
+    public List<string> GetMatchingPaths(string path, bool clip)
+    {
+        int lastSlash = path.LastIndexOf('/');
+        string completedPath = (lastSlash != -1) ? path.Substring(0, lastSlash) : "";
+        string uncompletePath = (lastSlash != -1) ? path.Substring(lastSlash) : path;
+        List<string> list = new List<string>();
+
+        //Go to so far complete path
+        DirectoryInfo listDirectory = new DirectoryInfo(currentDirectory.FullName + "/" + completedPath);
+
+        if (!listDirectory.Exists) return list;
+        // Get content
+        FileInfo[] fileInfo = listDirectory.GetFiles();
+        DirectoryInfo[] directoryInfo = listDirectory.GetDirectories();
+
+        foreach (DirectoryInfo directory in directoryInfo)
+        {
+            if (directory.Name.StartsWith(uncompletePath) && clip) list.Add(directory.Name.Substring(uncompletePath.Length) + "/");
+            else if (directory.Name.StartsWith(uncompletePath)) list.Add(directory.Name + "/");
+        }
+        foreach (FileInfo file in fileInfo)
+        {
+            if (file.Name.StartsWith(uncompletePath) && clip) list.Add(file.Name.Substring(uncompletePath.Length));
+            else if (file.Name.StartsWith(uncompletePath)) list.Add(file.Name);
+        }
+        return list;
+    }
+
     public void RunCommand(string command)
     {
         commands[command]();

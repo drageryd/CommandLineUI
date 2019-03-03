@@ -21,6 +21,7 @@ public class KeyboardInput : MonoBehaviour
 
     CommandExecuter commandExecuter;
     ScrollRect scrollRect;
+    bool doubleTab;
 
     // Use this for initialization
     void Start()
@@ -32,6 +33,7 @@ public class KeyboardInput : MonoBehaviour
         canvasText.text = "$ ";
         commandExecuter = GetComponent<CommandExecuter>();
         scrollRect = canvas.GetComponentInChildren<ScrollRect>();
+        doubleTab = false;
     }
 
     // Update is called once per frame
@@ -66,6 +68,40 @@ public class KeyboardInput : MonoBehaviour
         if (bash)
         {
             // First handle non text keys
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                //Autocomplete (first word is command rest is files)
+                string[] args = commands[currentCommand]["command"].Split(' ');
+                if (doubleTab && args.Length == 1)
+                {
+                    //List possible commands
+                    currentOutput = commandExecuter.ListCompleteCommand(args[args.Length-1]);
+                }
+                else if (doubleTab)
+                {
+                    //List possible path
+                    currentOutput = commandExecuter.ListCompletePath(args[args.Length-1]);
+                }
+                else if (args.Length == 1)
+                {
+                    //Complete command
+                    string completion = commandExecuter.CompleteCommand(args[args.Length-1]);
+                    commands[currentCommand]["command"] += completion;
+                    if (completion != "") doubleTab = false;
+                    else doubleTab = true;
+                }
+                else
+                {
+                    //Complete path
+                    string completion = commandExecuter.CompletePath(args[args.Length-1]);
+                    commands[currentCommand]["command"] += completion;
+                    if (completion != "") doubleTab = false;
+                    else doubleTab = true;
+                }
+                return;
+            }
+            else if (Input.anyKeyDown) doubleTab = false;
+
             if (Input.GetKeyDown(KeyCode.UpArrow))
             {
                 // Get previous in buffer
@@ -118,11 +154,6 @@ public class KeyboardInput : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Return))
             {
                 Exectute();
-                return;
-            }
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                //TODO: autocomplete
                 return;
             }
 
