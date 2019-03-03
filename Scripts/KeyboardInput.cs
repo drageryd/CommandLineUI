@@ -273,8 +273,8 @@ public class KeyboardInput : MonoBehaviour
         if (commands.Count > 0)
         {
             //currentOutput = "\n";
-            commands[commands.Count - 1]["history"] = commands[currentCommand]["completions"] + "$ " + commands[currentCommand]["command"].TrimEnd(' ');
-            commands[commands.Count - 1]["command"] = commands[currentCommand]["command"].TrimEnd(' ');
+            commands[commands.Count - 1]["history"] = commands[currentCommand]["completions"] + "$ " + commands[currentCommand]["command"];
+            commands[commands.Count - 1]["command"] = commands[currentCommand]["command"];
 
             //Check if history also contains completions, if so, dont copy them to command field
             int lastDollar = commands[currentCommand]["history"].LastIndexOf('$');
