@@ -75,12 +75,18 @@ public class KeyboardInput : MonoBehaviour
                 if (doubleTab && args.Length == 1)
                 {
                     //List possible commands
-                    currentOutput = commandExecuter.ListCompleteCommand(args[args.Length-1]);
+                    //currentOutput = commandExecuter.ListCompleteCommand(args[args.Length-1]);
+                    commands[currentCommand]["completions"] += 
+                        "$ " + commands[currentCommand]["command"] + "\n" +
+                        commandExecuter.ListCompleteCommand(args[args.Length-1]) + "\n";
                 }
                 else if (doubleTab)
                 {
                     //List possible path
-                    currentOutput = commandExecuter.ListCompletePath(args[args.Length-1]);
+                    //currentOutput = commandExecuter.ListCompletePath(args[args.Length-1]);
+                    commands[currentCommand]["completions"] += 
+                        "$ " + commands[currentCommand]["command"] + "\n" +
+                        commandExecuter.ListCompletePath(args[args.Length-1]) + "\n";
                 }
                 else if (args.Length == 1)
                 {
@@ -188,13 +194,13 @@ public class KeyboardInput : MonoBehaviour
         for (int i = 0; i < l - 1; i++)
         {
             Dictionary<string, string> c = commands[i];
-            string s = "$ " + c["history"] + "\n" + c["output"];
+            string s = c["history"] + "\n" + c["output"];
             if (s[s.Length - 1] != '\n') s += "\n";
             newText += s;
         }
 
         // Also print current command
-        newText += "$ ";
+        newText += commands[currentCommand]["completions"] + "$ ";
         for (int i = 0; i < commands[currentCommand]["command"].Length; i++)
         {
             if (i == commands[currentCommand]["command"].Length - markerPosition &&
@@ -258,9 +264,14 @@ public class KeyboardInput : MonoBehaviour
         if (commands.Count > 0)
         {
             //currentOutput = "\n";
-            commands[commands.Count - 1]["history"] = commands[currentCommand]["command"];
-            commands[commands.Count - 1]["command"] = commands[currentCommand]["command"];
-            commands[currentCommand]["command"] = commands[currentCommand]["history"];
+            commands[commands.Count - 1]["history"] = commands[currentCommand]["completions"] + "$ " + commands[currentCommand]["command"].TrimEnd(' ');
+            commands[commands.Count - 1]["command"] = commands[currentCommand]["command"].TrimEnd(' ');
+
+            //Check if history also contains completions, if so, dont copy them to command field
+            int lastDollar = commands[currentCommand]["history"].LastIndexOf('$');
+            if (lastDollar != -1) commands[currentCommand]["command"] = commands[currentCommand]["history"].Substring(lastDollar + 2);
+            else commands[currentCommand]["command"] = commands[currentCommand]["history"];
+            commands[currentCommand]["completions"] = "";
 
             //Add previous output to buffer
             commands[commands.Count - 1]["output"] = currentOutput;
@@ -271,6 +282,7 @@ public class KeyboardInput : MonoBehaviour
         commands.Add(new Dictionary<string, string>());
         currentCommand = commands.Count - 1;
         markerPosition = 0;
+        commands[currentCommand].Add("completions", "");
         commands[currentCommand].Add("command", "");
         commands[currentCommand].Add("history", "");
         commands[currentCommand].Add("output", "");
