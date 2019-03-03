@@ -76,17 +76,25 @@ public class KeyboardInput : MonoBehaviour
                 {
                     //List possible commands
                     //currentOutput = commandExecuter.ListCompleteCommand(args[args.Length-1]);
-                    commands[currentCommand]["completions"] += 
-                        "$ " + commands[currentCommand]["command"] + "\n" +
-                        commandExecuter.ListCompleteCommand(args[args.Length-1]) + "\n";
+                    string completion = commandExecuter.ListCompleteCommand(args[args.Length-1]);
+                    if (completion != "")
+                    {
+                        commands[currentCommand]["completions"] += 
+                            "$ " + commands[currentCommand]["command"] + "\n" +
+                            completion + "\n";
+                    }
                 }
                 else if (doubleTab)
                 {
                     //List possible path
                     //currentOutput = commandExecuter.ListCompletePath(args[args.Length-1]);
-                    commands[currentCommand]["completions"] += 
-                        "$ " + commands[currentCommand]["command"] + "\n" +
-                        commandExecuter.ListCompletePath(args[args.Length-1]) + "\n";
+                    string completion = commandExecuter.ListCompletePath(args[args.Length-1]);
+                    if (completion != "")
+                    {
+                        commands[currentCommand]["completions"] += 
+                            "$ " + commands[currentCommand]["command"] + "\n" +
+                            completion + "\n";
+                    }
                 }
                 else if (args.Length == 1)
                 {

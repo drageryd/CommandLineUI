@@ -199,8 +199,10 @@ public class CommandExecuter : MonoBehaviour {
 
     string GetCommonChars(List<string> list)
     {
-        string same = "";
+        //No matches
+        if (list.Count == 0) return "";
         //Length of shortest word in list
+        string same = "";
         int l = list[0].Length;
         foreach(string c in list) l = (c.Length < l) ? c.Length : l;
         //If all characters match, append to completion
