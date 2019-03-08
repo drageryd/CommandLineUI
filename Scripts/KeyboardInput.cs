@@ -79,7 +79,7 @@ public class KeyboardInput : MonoBehaviour
                     string completion = commandExecuter.ListCompleteCommand(args[args.Length-1]);
                     if (completion != "")
                     {
-                        commands[currentCommand]["completions"] += 
+                        commands[commands.Count - 1]["completions"] +=
                             "$ " + commands[currentCommand]["command"] + "\n" +
                             completion + "\n";
                     }
@@ -91,7 +91,7 @@ public class KeyboardInput : MonoBehaviour
                     string completion = commandExecuter.ListCompletePath(args[args.Length-1]);
                     if (completion != "")
                     {
-                        commands[currentCommand]["completions"] += 
+                        commands[commands.Count - 1]["completions"] +=
                             "$ " + commands[currentCommand]["command"] + "\n" +
                             completion + "\n";
                     }
@@ -100,17 +100,16 @@ public class KeyboardInput : MonoBehaviour
                 {
                     //Complete command
                     string completion = commandExecuter.CompleteCommand(args[args.Length-1]);
-                    commands[currentCommand]["command"] += completion;
-                    if (completion != "") doubleTab = false;
-                    else doubleTab = true;
+                    commands[commands.Count - 1]["command"] += completion;
+                    doubleTab = completion == "";
                 }
                 else
                 {
                     //Complete path
                     string completion = commandExecuter.CompletePath(args[args.Length-1]);
-                    commands[currentCommand]["command"] += completion;
-                    if (completion != "") doubleTab = false;
-                    else doubleTab = true;
+                    commands[commands.Count - 1]["command"] += completion;
+                    doubleTab = completion == "";
+                    Debug.Log("complete path");
                 }
                 return;
             }
@@ -209,7 +208,7 @@ public class KeyboardInput : MonoBehaviour
         }
 
         // Also print current command
-        newText += commands[currentCommand]["completions"] + "$ ";
+        newText += commands[commands.Count - 1]["completions"] + "$ ";
         for (int i = 0; i < commands[currentCommand]["command"].Length; i++)
         {
             if (i == commands[currentCommand]["command"].Length - markerPosition &&
@@ -273,7 +272,7 @@ public class KeyboardInput : MonoBehaviour
         if (commands.Count > 0)
         {
             //currentOutput = "\n";
-            commands[commands.Count - 1]["history"] = commands[currentCommand]["completions"] + "$ " + commands[currentCommand]["command"];
+            commands[commands.Count - 1]["history"] = commands[commands.Count - 1]["completions"] + "$ " + commands[currentCommand]["command"];
             commands[commands.Count - 1]["command"] = commands[currentCommand]["command"];
 
             //Check if history also contains completions, if so, dont copy them to command field
