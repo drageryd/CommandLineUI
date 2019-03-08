@@ -64,8 +64,8 @@ public class KeyboardInput : MonoBehaviour
             SendToConsole(commands);
         }
 
-        // Handle keyboard input
-        if (bash)
+        // Handle keyboard input to console
+        if (bash && !CommandBusy())
         {
             // First handle non text keys
             if (Input.GetKeyDown(KeyCode.Tab))
@@ -109,7 +109,6 @@ public class KeyboardInput : MonoBehaviour
                     string completion = commandExecuter.CompletePath(args[args.Length-1]);
                     commands[commands.Count - 1]["command"] += completion;
                     doubleTab = completion == "";
-                    Debug.Log("complete path");
                 }
                 return;
             }
@@ -185,6 +184,15 @@ public class KeyboardInput : MonoBehaviour
                 Debug.Log("Key " + c + " pressed");
                 commands[currentCommand]["command"] =
                     commands[currentCommand]["command"].Insert(commands[currentCommand]["command"].Length - markerPosition, c.ToString());
+            }
+        }
+        //Handle keyboard input when command is executing
+        else if (bash)
+        {
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+            {
+                //Abort execution
+                if (Input.GetKeyDown(KeyCode.C)) commandExecuter.Abort();
             }
         }
         else

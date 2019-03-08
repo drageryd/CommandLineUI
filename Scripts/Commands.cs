@@ -15,6 +15,7 @@ public class Commands : MonoBehaviour
     private PythonEngine pythonEngine;
     private StreamReader stdinStreamReader;
     private StreamWriter stdoutStreamWriter;
+    private System.Action childAbort;
 
     DirectoryInfo currentDirectory;
 
@@ -42,6 +43,7 @@ public class Commands : MonoBehaviour
 
         //Get player python engine
         pythonEngine = player.GetComponent<PythonEngine>();
+        childAbort = null;
     }
 
     // Update is called once per frame
@@ -116,6 +118,15 @@ public class Commands : MonoBehaviour
     public void RunCommand(string command)
     {
         commands[command]();
+        childAbort = null;
+    }
+
+    public void Abort()
+    {
+        if (childAbort != null)
+        {
+            childAbort();
+        }
     }
 
     //Run callback events
@@ -256,7 +267,7 @@ public class Commands : MonoBehaviour
             AppendOutput("python: can't open file '" + path + "': No such file or directory");
             return;
         }
-
+        childAbort = pythonEngine.Abort;
         pythonEngine.SetCwd(currentDirectory.FullName);
         pythonEngine.ExecuteFile(path);//fileInfo.FullName);
         pythonEngine.WriteStdIn(stdinStreamReader.ReadToEnd(), true);

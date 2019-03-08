@@ -108,6 +108,20 @@ public class CommandExecuter : MonoBehaviour {
         }
     }
 
+    public void Abort()
+    {
+        if (myThread.IsAlive)
+        {
+            //Kills potential child threads
+            commandObject.Abort();
+            myThread.Abort();
+            StreamWrite(stdpipeStream, "Interrupt");
+            stdinStream.Close();
+            stdpipeStream.Close();
+            stdoutStream.Close();
+        }
+    }
+
     string FindRedirectOut(string command, ref StreamWriter streamWriter)
     {
         int redirect = command.IndexOf('>');
